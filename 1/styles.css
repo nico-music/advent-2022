@@ -1,0 +1,9 @@
+.bar-container {
+    display: flex;
+    flex-direction: column;
+}
+
+span.bar {
+    display: flex;
+    flex-direction: column;
+}
