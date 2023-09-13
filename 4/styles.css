@@ -1,0 +1,36 @@
+.sections-grid {
+    display: grid;
+    position: relative;
+    grid-template-columns: repeat(10, 32px);
+    grid-template-rows: repeat(10, 32px);
+    border: 1px solid slategray;
+    width: calc(10 * 32px);
+}
+
+.tile {
+    display: block;
+    height: 100%;
+    width: 100%;
+    background-color: white;
+    transition: background-color linear 0.2s;
+}
+
+.tile.active-one {
+    background-color: teal;
+}
+.tile.active-two {
+    background-color: violet;
+}
+.tile.active-one.active-two {
+    background-color: indigo;
+}
+
+.display {
+    position: absolute;
+    top: 0;
+    right: -14em;
+    display: block;
+    width: 12em;
+    height: 8em;
+    border: 1px solid black;
+}

@@ -4,5 +4,6 @@
 // TODO: add "get input for this puzzle" using api https://adventofcode.com/{year}/day/{dayNum}/input
 
 export const render = (markup: string): void => {
+    // TODO: add back button to /
     document.querySelector<HTMLDivElement>('#app')!.innerHTML = markup;
 };

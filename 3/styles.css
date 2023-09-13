@@ -1,0 +1,47 @@
+.container {
+    display: flex;
+    flex-direction: row;
+    position: relative;
+    padding-top: 1em;
+}
+.tile {
+    display: block;
+    border: 1px solid black;
+    border-radius: 0.25em;
+    width: 2em;
+    height: 2em;
+    padding: 0.5em;
+    margin: 0.5em;
+    text-align: center;
+    position: relative;
+}
+
+.index-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    transition: all linear 0.2s;
+    height: 0;
+    width: 0;
+    border-top: 1.25em solid rebeccapurple;
+    border-left: 0.75em solid transparent;
+    border-right: 0.75em solid transparent;
+}
+.index-indicator.terminal {
+    border-radius: 100%;
+}
+
+#compartment-one {
+    position: relative;
+}
+#compartment-one::before {
+    content: "";
+    position: absolute;
+    top: 1em;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 1em);
+    background-color: lightslategray;
+    border-radius: 0.5em;
+}
