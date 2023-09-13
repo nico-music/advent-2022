@@ -1,5 +1,5 @@
 import { defaultIntervalMS, newlineChars } from "../constants";
-import { render } from "../src/utils/render";
+import { msInputId, render } from "../src/utils/render";
 import { defaultInput } from "./defaultInput";
 import './styles.css';
 
@@ -21,6 +21,8 @@ const sumTwo = sectionAssignments.filter(([[initOne, termOne], [initTwo, termTwo
     );
 }).length;
 
+const getUserInputInterval = () => parseInt(document.querySelector<HTMLInputElement>(`#${msInputId}`)!.value);
+
 const renderList = (gridDiv: HTMLDivElement) => {
     let index = 0, counter = 0;
     const renderPair = ([[initOne, termOne], [initTwo, termTwo]]: number[][]) => {
@@ -32,7 +34,7 @@ const renderList = (gridDiv: HTMLDivElement) => {
             displayThree.innerHTML = `# overlapped: ${++counter}`;
         }, defaultIntervalMS * 2);
 
-        const innerIncrement = setInterval(() => {
+        const innerIncrementFn = () => {
             const displayOne = gridDiv.querySelector('.display>div:nth-child(1)')!
             const displayTwo = gridDiv.querySelector('.display>div:nth-child(2)')!
             displayOne.innerHTML = `Assignment 1: ${initOne} - ${termOne}`;
@@ -53,20 +55,21 @@ const renderList = (gridDiv: HTMLDivElement) => {
                 tiles.forEach((tile) => {
                     tile.classList.remove('active-one', 'active-two');
                 });
-                clearInterval(innerIncrement);
+                return;
             }
             innerIndex++;
-        }, defaultIntervalMS);
+            setTimeout(innerIncrementFn, getUserInputInterval());
+        };
+        const innerIncrementInterval = setTimeout(innerIncrementFn, getUserInputInterval());
     };
-    const increment = setInterval(() => {
-        // if (index < 0) {
-        //     clearInterval(increment);
-        //     return;
-        // }
-        const pair = sectionAssignments[index];
-        renderPair(pair);
-        index++;
-    }, defaultIntervalMS * 3);
+    const intervalFn = () => {
+        const timeout = setTimeout(() => {
+            const pair = sectionAssignments[index++];
+            renderPair(pair);
+            setTimeout(intervalFn, getUserInputInterval());
+        }, getUserInputInterval() * 2);
+    };
+    setTimeout(intervalFn, getUserInputInterval());
 };
 
 const sectionTiles = Array.from({ length: 100 }, () => {
