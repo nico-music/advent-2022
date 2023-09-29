@@ -1,0 +1,28 @@
+.container {
+    overflow: hidden;
+    width: 30em;
+    height: 100%;
+}
+#process-lines-container {
+    display: flex;
+    flex-direction: column-reverse;
+    height: 23.5em;
+    width: 100%;
+    background-color: #000;
+    color: #fff;
+    border: 2px solid #fff;
+    outline: 1px solid #000;
+    border-radius: 4px;
+    box-shadow: 0 1em 1em 1em rgba(0, 0, 0, 0.4);
+    overflow: scroll;
+    padding-right: 20px;
+}
+
+#process-lines-container > pre {
+    margin: 0.125em 0.5em;
+    font-size: 1em;
+}
+
+#process-lines-container > pre:first-child {
+    background-color: darkcyan;
+}

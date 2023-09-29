@@ -1,5 +1,7 @@
 import { newlineChars } from '../constants';
 import { defaultInput } from "./defaultInput";
+import { msInputId, render } from '../src/utils/render';
+import './styles.css';
 
 type dirEntry<T> = Record<string, T>
 interface directory extends dirEntry<directory|number> {}
@@ -22,8 +24,72 @@ const topLevelDir: directory = {
 };
 let currDir = topLevelDir;
 let parentDir = {} as directory;
-let rowIndex = 0;
+const rowIndex = 0;
 
+// setup DOM
+
+const processLinesContainer = document.createElement('div');
+processLinesContainer.id = 'process-lines-container';
+const markup = `
+<div class="container">
+    ${processLinesContainer.outerHTML}
+</div>
+`;
+
+render(markup);
+const getUserInputInterval = () => parseInt(document.querySelector<HTMLInputElement>(`#${msInputId}`)!.value);
+
+// reactivity
+
+function* incrementalIndexGenerator () {
+    let index = 0;
+    while (true) yield index++;
+}
+const createPreNode = (val?: string) => {
+    const preElement = document.createElement('pre');
+    preElement.innerHTML = val ?? `///////////////
+DONE PROCESSING
+///////////////`;
+    return preElement;
+};
+const statefulTimeoutIndex = incrementalIndexGenerator();
+const mutateDOMNodeWithObservableValue = (node: HTMLElement) => (value: number) => {
+    const defaultTimeout = getUserInputInterval();
+    setTimeout(() => {
+        node.innerHTML = createPreNode(instructions[value]).outerHTML + node.innerHTML; // update
+    }, statefulTimeoutIndex.next().value as number * defaultTimeout);
+};
+interface IObservableNumVal {
+    value: number;
+}
+const createProxyObjFromValue = (initValue: number, callback: (val: number) => void): [IObservableNumVal, (val: number) => number] => {
+    const initVal: IObservableNumVal = {
+        value: initValue,
+    };
+    const objProx = new Proxy(initVal, {
+        set: (target, key: string, value: number) => {
+            target[key] = value;
+            callback(value);
+            return true;
+        }
+    });
+    // console.log('PROXXXXXXXXXYYYYY', objProx, objProx.value)
+    const setRowIndex = (num: number) => {
+        // console.log('SET ROW INDEX', num);
+        objProx.value = num;
+        return num;
+    };
+    return [objProx, setRowIndex];
+};
+
+// implementation
+
+const nodeCallback = mutateDOMNodeWithObservableValue(document.querySelector(`#${processLinesContainer.id}`)!);
+const [observableRowIndex, setObservableRowIndex] = createProxyObjFromValue(rowIndex, nodeCallback);
+
+// solution logic
+
+// TODO: callback to highlight row of this directory in DOM in panel to right
 const changeDir = (dirName: string) => {
     if (dirName === changeDirToParentStr) {
         currDir = currDir.parent as directory ?? topLevelDir;
@@ -33,42 +99,37 @@ const changeDir = (dirName: string) => {
     currDir = currDir[dirName] as directory;
     currDir.parent = parentDir;
 };
+
+// TODO: callback to add item at correct tab index and height in panel to right
 const addItemsToCurrDir = () => {
-    const rowStr = instructions[rowIndex];
-    // assume `{dirStr}{dirName}` or `{fileSize} {fileName}`
+    const rowStr = instructions[observableRowIndex.value];
     if (rowStr.indexOf(dirStr) > -1) {
-        // add directory
         const [, dirName] = rowStr.split(dirStr);
-        console.log('ADD DIR ' + dirName);
         currDir[dirName] = {} as directory;
         return;
     }
-    // add file
     const [fileSizeStr, fileName] = rowStr.split(' ');
-    console.log('ADD FILE ' + fileName + ' : ' + fileSizeStr);
     currDir[fileName] = parseInt(fileSizeStr);
     return;
 };
 const checkMaxSizeForDeletion: compareFn = (num) => num <= maxSizeForDeletion;
-
-// core loop
 const processLine = () => {
-    const rowStr = instructions[rowIndex];
+    const rowStr = instructions[observableRowIndex.value];
     if (rowStr.indexOf(cmdPrefix) > -1 && rowStr.indexOf(changeDirStr) > -1) {
         const [, dirName] = rowStr.split(changeDirStr); // ['$ cd ', dirName]
         changeDir(dirName);
-        ++rowIndex;
+        setObservableRowIndex(observableRowIndex.value + 1);
         return;
     }
     if (rowStr.indexOf(cmdPrefix) > -1 && rowStr.indexOf(lsStr) > -1) {
-        while (rowIndex < instructions.length && instructions[++rowIndex] && instructions[rowIndex].indexOf(cmdPrefix) === -1) {
+        while (setObservableRowIndex(observableRowIndex.value + 1) < instructions.length && instructions[observableRowIndex.value].indexOf(cmdPrefix) === -1) {
             addItemsToCurrDir();
         }
         return;
     }
 };
 
-while (rowIndex < instructions.length) {
+while (observableRowIndex.value < instructions.length) {
     processLine();
 }
 
@@ -108,41 +169,3 @@ console.log(
         return 0;
     })[0],
 );
-
-/**
- * 
- * IDEA - PART 1
-
-
-UZE OBZERVABLEZ
-
-<terminal device>
-
-instructions (only show trailing n lines in frame)
-
-- each tick:
-    - render instruction text to frame
-
-- slice instructions by (current)
-
-- on ls:
-    - is command? break
-    - is not command? highlight row
-
-</terminal>
-
-
-<display>
-
-- each tick:
-
-
-- when item is added to dir:
-    - update JSON ????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????????
-
-</display>
-
-
- */
-
-
