@@ -36,6 +36,8 @@ const setupChildViewElements = (btn: HTMLButtonElement, input: HTMLInputElement)
     input.value = "300";
 }
 
+export const getUserInputInterval = () => parseInt(document.querySelector<HTMLInputElement>(`#${msInputId}`)!.value);
+
 export const render = (markup: string): void => {
     const appDiv = document.querySelector<HTMLDivElement>('#app')!;
     appDiv.innerHTML = markup;
